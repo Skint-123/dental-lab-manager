@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>Dental Lab Manager</title>
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <h1>🦷 Dental Lab Manager</h1>
+    <small id="syncStatus">Локальный режим</small>
+  </div>
+  <button id="logoutBtn" class="ghost hidden">Выйти</button>
+</header>
+
+<main>
+<section id="setupView" class="card">
+  <h2>Первый запуск</h2>
+  <p>Приложение работает сразу. Для синхронизации телефона и ПК подключи Supabase в настройках ниже.</p>
+  <div class="grid2">
+    <label>Supabase URL<input id="supabaseUrl" placeholder="https://xxxx.supabase.co"></label>
+    <label>Supabase Anon Key<input id="supabaseKey" placeholder="eyJ..."></label>
+  </div>
+  <button id="saveConfig" class="primary">Сохранить подключение</button>
+  <p class="hint">Если пока не хочешь настраивать облако, используй локальный режим — данные будут храниться на этом устройстве.</p>
+</section>
+
+<section id="authView" class="card hidden">
+  <h2>Аккаунт</h2>
+  <div class="grid2">
+    <label>Email<input id="email" type="email" autocomplete="email"></label>
+    <label>Пароль<input id="password" type="password" autocomplete="current-password"></label>
+  </div>
+  <div class="row">
+    <button id="signInBtn" class="primary">Войти</button>
+    <button id="signUpBtn">Создать аккаунт</button>
+  </div>
+  <p class="hint">Один и тот же аккаунт можно использовать на телефоне и ПК.</p>
+</section>
+
+<section id="appView" class="hidden">
+<nav class="tabs">
+  <button data-tab="dashboard" class="active">📊 Обзор</button>
+  <button data-tab="orders">🧾 Заказы</button>
+  <button data-tab="prices">💰 Прайс</button>
+  <button data-tab="clients">👨‍⚕️ Клиенты</button>
+  <button data-tab="settings">⚙️ Настройки</button>
+</nav>
+
+<div id="dashboard" class="tab active">
+  <div class="stats">
+    <div class="stat"><span>Заказов</span><b id="statOrders">0</b></div>
+    <div class="stat"><span>Выручка USD</span><b id="statUsd">$0</b></div>
+    <div class="stat"><span>Выручка UZS</span><b id="statUzs">0 сум</b></div>
+    <div class="stat"><span>Долги</span><b id="statDebt">0 сум</b></div>
+  </div>
+  <div class="card">
+    <h2>Последние заказы</h2>
+    <div id="recentOrders"></div>
+  </div>
+</div>
+
+<div id="orders" class="tab">
+  <div class="card">
+    <div class="sectionHead"><h2>Новый заказ</h2><button id="newOrderBtn">Очистить</button></div>
+    <div class="grid2">
+      <label>Клиент / врач<input id="orderClient" placeholder="Например: Dr. Ali"></label>
+      <label>Дата<input id="orderDate" type="date"></label>
+    </div>
+    <label>Быстрый ввод
+      <textarea id="smartInput" rows="3" placeholder="Например: 5 лсп металл, 3 циркона, 2 металлокерамики"></textarea>
+    </label>
+    <div class="row">
+      <button id="parseBtn" class="primary">🤖 Распознать и посчитать</button>
+      <button id="voiceBtn">🎙️ Голос</button>
+    </div>
+    <div id="orderItems"></div>
+    <div class="totalBox">
+      <div>Итого USD <strong id="orderTotalUsd">$0.00</strong></div>
+      <div>Курс USD/UZS <input id="orderRate" type="number" step="0.01"></div>
+      <div>Итого UZS <strong id="orderTotalUzs">0 сум</strong></div>
+    </div>
+    <div class="row">
+      <button id="saveOrderBtn" class="primary">💾 Сохранить заказ</button>
+      <button id="copyMessageBtn">📋 Скопировать клиенту</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sectionHead"><h2>Все заказы</h2><input id="orderSearch" placeholder="Поиск..."></div>
+    <div id="ordersTable"></div>
+  </div>
+</div>
+
+<div id="prices" class="tab">
+  <div class="card">
+    <div class="sectionHead"><h2>Прайс</h2><button id="addPriceBtn" class="primary">+ Добавить</button></div>
+    <p class="hint">Заполни свои услуги и цены. Названия можно писать на русском/узбекском.</p>
+    <div id="pricesTable"></div>
+  </div>
+</div>
+
+<div id="clients" class="tab">
+  <div class="card">
+    <div class="sectionHead"><h2>Клиенты</h2><button id="addClientBtn" class="primary">+ Добавить</button></div>
+    <div id="clientsTable"></div>
+  </div>
+</div>
+
+<div id="settings" class="tab">
+  <div class="card">
+    <h2>Настройки</h2>
+    <label>Курс USD → UZS по умолчанию<input id="defaultRate" type="number" step="0.01"></label>
+    <label>Название лаборатории<input id="labName" placeholder="Моя зуботехническая лаборатория"></label>
+    <button id="saveSettings" class="primary">Сохранить</button>
+    <hr>
+    <h3>Резервная копия</h3>
+    <div class="row">
+      <button id="exportJsonBtn">Экспорт JSON</button>
+      <label class="fileBtn">Импорт JSON<input id="importJson" type="file" accept=".json"></label>
+    </div>
+    <p class="hint">JSON нужен как резервная копия. Для Excel/PDF можно добавить отдельный модуль позже.</p>
+  </div>
+</div>
+</section>
+</main>
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
